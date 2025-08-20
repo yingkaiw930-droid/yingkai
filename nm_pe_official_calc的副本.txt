@@ -1,0 +1,498 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>内蒙古中考体育查分（王英凯）</title>
+<style>
+  :root{--bg:#0b1020;--card:#0f172a;--text:#e5e7eb;--muted:#93a3af;--line:rgba(148,163,184,.25);--brand:#22c55e;--accent:#38bdf8}
+  *{box-sizing:border-box}
+  body{margin:0;background:linear-gradient(135deg,#0b1020,#091426);color:var(--text);font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"PingFang SC","Microsoft YaHei","Noto Sans CJK SC",sans-serif}
+  .wrap{max-width:1200px;margin:28px auto;padding:0 16px}
+  .title{font-size:26px;font-weight:800;display:flex;gap:10px;align-items:center}
+  .badge{font-size:12px;background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.35);color:#bbf7d0;padding:4px 8px;border-radius:999px}
+  .grid{display:grid;gap:16px}
+  @media(min-width:1024px){.grid{grid-template-columns:1.2fr .8fr}}
+  .card{background:linear-gradient(180deg,#0b1220,#0b1527);border:1px solid var(--line);border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.3)}
+  .hdr{display:flex;justify-content:space-between;align-items:center;padding:16px}
+  .muted{color:var(--muted)}
+  .section{padding:12px 16px;border-top:1px dashed var(--line)}
+  .row{display:grid;grid-template-columns:140px 1fr 120px;gap:10px;align-items:center;margin:10px 0}
+  label{font-size:13px;color:var(--muted)}
+  input,select{width:100%;padding:12px;border-radius:12px;border:1px solid var(--line);background:#0a1426;color:var(--text);outline:none}
+  input:focus,select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(56,189,248,.2)}
+  .units{font-size:12px;color:var(--muted)}
+  .btn{border:none;border-radius:999px;padding:10px 14px;font-weight:700;cursor:pointer}
+  .btn-primary{background:linear-gradient(90deg,#10b981,#22c55e);color:#052e1a}
+  .btn-ghost{background:transparent;color:var(--text);border:1px solid var(--line)}
+  .table{width:100%;border-collapse:collapse}
+  .table th,.table td{padding:10px;border-bottom:1px solid var(--line);text-align:left}
+  .table th{font-size:12px;color:var(--muted)}
+  .pill{font-size:12px;padding:4px 8px;border-radius:999px;background:rgba(56,189,248,.18);border:1px solid rgba(56,189,248,.35);color:#bae6fd}
+  .total{font-size:40px;font-weight:900}
+  .hint{font-size:12px;color:#fde68a}
+  /* modal */
+  dialog{border:none;border-radius:18px;max-width:1000px;width:96%;background:#0c1528;color:var(--text);padding:0}
+  .modal-hdr{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid var(--line)}
+  .modal-body{max-height:70vh;overflow:auto;padding:10px 16px}
+  .tabs{display:flex;gap:8px;padding:8px 12px;border-bottom:1px dashed var(--line)}
+  .tab{padding:6px 10px;border-radius:999px;border:1px solid var(--line);cursor:pointer;font-size:12px}
+  .tab.active{background:rgba(56,189,248,.18);border-color:rgba(56,189,248,.5)}
+  .mini{font-size:12px}
+  .warn{color:#fecaca}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="title">内蒙古中考体育查分
+    <span class="badge">官方表查分 · 王英凯制作</span>
+  </div>
+
+  <div class="grid" style="margin-top:14px">
+    <!-- 输入 -->
+    <div class="card">
+      <div class="hdr">
+        <div>
+          <div style="font-weight:800">基本信息 & 成绩录入</div>
+          <div class="muted mini">输入原始成绩（单位见右侧）。BMI 直接输入数值。</div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button id="viewTables" class="btn btn-ghost">查看评分表</button>
+          <button id="calcBtn" class="btn btn-primary">计算分数</button>
+          <button id="resetBtn" class="btn btn-ghost">清空</button>
+        </div>
+      </div>
+      <div class="section">
+        <div class="row">
+          <label>学生性别</label>
+          <select id="gender">
+            <option value="male">男</option>
+            <option value="female">女</option>
+          </select>
+          <div class="units"></div>
+        </div>
+        <div class="row">
+          <label>年级</label>
+          <select id="grade">
+            <option value="7">七年级</option>
+            <option value="8">八年级</option>
+            <option value="9" selected>九年级</option>
+          </select>
+          <div class="units"></div>
+        </div>
+      </div>
+      <div class="section" id="inputsArea"></div>
+      <div class="section">
+        <div class="hint"></div>
+      </div>
+    </div>
+
+    <!-- 结果 -->
+    <div class="card">
+      <div class="hdr">
+        <div>
+          <div style="font-weight:800">分项得分</div>
+          <div class="muted mini">单项分（0—100）与权重后总分（百分制）</div>
+        </div>
+        <button id="printBtn" class="btn btn-ghost">打印/保存 PDF</button>
+      </div>
+
+      <div class="section">
+        <table class="table" id="scoreTable">
+          <thead><tr>
+            <th>项目</th><th>原始成绩</th><th>单项分</th><th>权重</th><th>加权分</th><th>说明</th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+
+        <div style="display:flex;justify-content:space-between;align-items:end;margin-top:12px">
+          <div>
+            <div class="muted mini">总分（加权，满分 100）</div>
+            <div id="totalScore" class="total">—</div>
+          </div>
+          <div><span class="pill" id="summaryBadge">—</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 评分表弹窗 -->
+<dialog id="tablesModal">
+  <div class="modal-hdr">
+    <div style="font-weight:800">查看评分表（官方对照，单位同输入）</div>
+    <button id="closeModal" class="btn btn-ghost">关闭</button>
+  </div>
+  <div class="tabs" id="tabs"></div>
+  <div class="modal-body" id="modalBody"></div>
+</dialog>
+
+<script>
+/** =================== 权重设置（总分=100） =================== */
+const WEIGHTS = {
+  BMI: 0.15,
+  VC: 0.15,          // 肺活量 Vital Capacity
+  SPRINT50: 0.20,    // 50米
+  SITREACH: 0.10,    // 坐位体前屈
+  LONGJUMP: 0.10,    // 立定跳远
+  STRENGTH: 0.10,    // 引体向上（男）/仰卧起坐（女）
+  MIDRUN: 0.20       // 1000（男）/800（女）
+};
+
+/** ============ 官方评分表（已根据你提供的截图录入） ============
+ * 说明：
+ * - 时间单位：50米/中长跑均用“秒”；表中形如 3'55" 在代码里已换算成 235（=3*60+55）
+ * - 坐位体前屈：厘米；允许负值（如 -1.3）
+ * - 立定跳远：厘米
+ * - 引体向上/仰卧起坐：次
+ * - 肺活量：毫升（mL）
+ * - 查分规则：
+ *    - 对于“越小越好”的项目（50m、中长跑）：找到“<=阈值”的最高得分；若比最低阈值还慢，则给最低分
+ *    - 对于“越大越好”的项目（坐位体前屈、立定跳远、肺活量、次数）：找到“>=阈值”的最高得分；若低于最低阈值，则给最低分
+ *    - BMI：按区间（正常=100，低体重/超重=80，肥胖=60）
+ */
+const TABLES = {
+  male: {
+    SPRINT50: {
+      '7': { // 50米（秒） 越小越好
+        100:7.8,95:7.9,90:8.0,85:8.1,80:8.2,78:8.4,76:8.6,74:8.8,72:9.0,70:9.2,68:9.4,66:9.6,64:9.8,62:10.0,60:10.2,50:10.4,40:10.6,30:10.8,20:11.0,10:11.2
+      },
+      '8': {
+        100:7.5,95:7.6,90:7.7,85:7.8,80:7.9,78:8.1,76:8.3,74:8.5,72:8.7,70:8.9,68:9.1,66:9.3,64:9.5,62:9.7,60:9.9,50:10.1,40:10.3,30:10.5,20:10.7,10:10.9
+      },
+      '9': {
+        100:7.3,95:7.4,90:7.5,85:7.6,80:7.7,78:7.9,76:8.1,74:8.3,72:8.5,70:8.7,68:8.9,66:9.1,64:9.3,62:9.5,60:9.7,50:9.9,40:10.1,30:10.3,20:10.5,10:10.7
+      }
+    },
+    MIDRUN1000: { // 1000米（秒） 越小越好
+      '7': {100:"3'55",95:"4'05",90:"4'15",85:"4'22",80:"4'30",78:"4'35",76:"4'40",74:"4'45",72:"4'50",70:"4'55",68:"5'00",66:"5'05",64:"5'10",62:"5'15",60:"5'20",50:"5'40",40:"6'00",30:"6'20",20:"6'40",10:"7'00"},
+      '8': {100:"3'50",95:"3'55",90:"4'00",85:"4'07",80:"4'15",78:"4'20",76:"4'25",74:"4'30",72:"4'35",70:"4'40",68:"4'45",66:"4'50",64:"4'55",62:"5'00",60:"5'05",50:"5'25",40:"5'45",30:"6'05",20:"6'25",10:"6'45"},
+      '9': {100:"3'40",95:"3'45",90:"3'50",85:"3'57",80:"4'05",78:"4'10",76:"4'15",74:"4'20",72:"4'25",70:"4'30",68:"4'35",66:"4'40",64:"4'45",62:"4'50",60:"4'55",50:"5'15",40:"5'35",30:"5'55",20:"6'15",10:"6'35"}
+    },
+    SITREACH: { // 坐位体前屈（厘米） 越大越好
+      '7': {100:17.6,95:15.9,90:14.2,85:12.3,80:10.4,78:9.1,76:7.8,74:6.5,72:5.2,70:3.9,68:2.6,66:1.3,64:0.0,62:-1.3,60:-2.6,50:-3.8,40:-5.0,30:-6.2,20:-7.4,10:-8.6},
+      '8': {100:19.6,95:17.7,90:15.8,85:13.7,80:11.6,78:10.3,76:9.0,74:7.7,72:6.4,70:5.1,68:3.8,66:2.5,64:1.2,62:-0.1,60:-1.4,50:-2.6,40:-3.8,30:-5.0,20:-6.2,10:-7.4},
+      '9': {100:21.6,95:19.7,90:17.8,85:15.8,80:13.8,78:12.4,76:11.0,74:9.6,72:8.2,70:6.8,68:5.4,66:4.0,64:2.6,62:1.2,60:-0.2,50:-1.4,40:-2.6,30:-3.8,20:-5.0,10:-6.2}
+    },
+    PULLUPS: { // 引体向上（次） 越大越好
+      '7': {100:13,95:12,90:11,85:10,80:9,78:9,76:8,74:7,72:7,70:6,68:6,66:5,64:5,62:4,60:4,50:3,40:2,30:2,20:1,10:1},
+      '8': {100:14,95:13,90:12,85:11,80:10,78:10,76:9,74:8,72:8,70:7,68:7,66:6,64:6,62:5,60:5,50:4,40:3,30:3,20:2,10:1},
+      '9': {100:15,95:14,90:13,85:12,80:11,78:10,76:9,74:8,72:8,70:9,68:8,66:7,64:6,62:6,60:5,50:5,40:4,30:3,20:3,10:2}
+    },
+    LONGJUMP: { // 立定跳远（厘米） 越大越好
+      '7': {100:225,95:218,90:211,85:203,80:195,78:191,76:187,74:183,72:179,70:175,68:171,66:167,64:163,62:159,60:155,50:150,40:145,30:140,20:135,10:130},
+      '8': {100:240,95:233,90:226,85:218,80:210,78:206,76:202,74:198,72:194,70:190,68:186,66:182,64:178,62:174,60:170,50:165,40:160,30:155,20:150,10:145},
+      '9': {100:250,95:245,90:240,85:233,80:225,78:221,76:217,74:213,72:209,70:205,68:201,66:197,64:193,62:189,60:185,50:180,40:175,30:170,20:165,10:160}
+    },
+    BMI: { // 区间：正常=100；低体重/超重=80；肥胖=60
+      '7': { normal:[15.5,22.1], lowMax:15.4, over:[22.2,24.9], obeseMin:25.0 },
+      '8': { normal:[15.7,22.5], lowMax:15.6, over:[22.6,25.2], obeseMin:25.3 },
+      '9': { normal:[15.8,22.8], lowMax:15.7, over:[22.9,26.0], obeseMin:26.1 }
+    },
+    VC: { // 肺活量（mL） 越大越好
+      '7': {100:3640,95:3520,90:3400,85:3150,80:3000,78:2920,76:2860,74:2840,72:2420,70:2360,68:2180,66:2060,64:1940,62:1820,60:1760,50:1600,40:1500,30:1400,20:1300,10:1200},
+      '8': {100:3940,95:3820,90:3700,85:3450,80:3290,78:3200,76:3090,74:3020,72:2960,70:2900,68:2780,66:2680,64:2620,62:2420,60:2300,50:2180,40:1780,30:1670,20:1560,10:1450},
+      '9': {100:4240,95:4120,90:4000,85:3750,80:3580,78:3500,76:3380,74:3140,72:3020,70:2990,68:2870,66:2760,64:2540,62:2400,60:2320,50:2130,40:2060,30:1940,20:1820,10:1700}
+    }
+  },
+
+  female: {
+    SPRINT50: {
+      '7': {100:8.1,95:8.2,90:8.3,85:8.6,80:8.9,78:9.1,76:9.3,74:9.5,72:9.7,70:9.9,68:10.1,66:10.3,64:10.5,62:10.7,60:10.9,50:11.1,40:11.3,30:11.5,20:11.7,10:11.9},
+      '8': {100:8.0,95:8.1,90:8.2,85:8.5,80:8.7,78:9.0,76:9.2,74:9.4,72:9.6,70:9.8,68:10.0,66:10.2,64:10.4,62:10.6,60:10.8,50:11.0,40:11.2,30:11.4,20:11.6,10:11.8},
+      '9': {100:7.9,95:8.0,90:8.1,85:8.4,80:8.7,78:8.9,76:9.1,74:9.3,72:9.5,70:9.7,68:9.9,66:10.1,64:10.3,62:10.5,60:10.7,50:10.9,40:11.1,30:11.3,20:11.5,10:11.7}
+    },
+    MIDRUN800: { // 800米（秒）
+      '7': {100:"3'35",95:"3'42",90:"3'49",85:"3'57",80:"4'05",78:"4'10",76:"4'15",74:"4'20",72:"4'25",70:"4'30",68:"4'35",66:"4'40",64:"4'45",62:"4'50",60:"4'55",50:"5'05",40:"5'15",30:"5'25",20:"5'35",10:"5'45"},
+      '8': {100:"3'30",95:"3'37",90:"3'44",85:"3'52",80:"4'00",78:"4'05",76:"4'10",74:"4'15",72:"4'20",70:"4'25",68:"4'30",66:"4'35",64:"4'40",62:"4'45",60:"4'50",50:"5'00",40:"5'10",30:"5'20",20:"5'30",10:"5'40"},
+      '9': {100:"3'25",95:"3'32",90:"3'39",85:"3'47",80:"3'55",78:"4'00",76:"4'05",74:"4'10",72:"4'15",70:"4'20",68:"4'25",66:"4'30",64:"4'35",62:"4'40",60:"4'45",50:"4'55",40:"5'05",30:"5'15",20:"5'25",10:"5'35"}
+    },
+    SITREACH: {
+      '7': {100:21.8,95:20.1,90:18.4,85:16.7,80:15.0,78:13.7,76:12.4,74:11.1,72:9.8,70:8.5,68:7.2,66:5.9,64:4.6,62:3.3,60:2.0,50:1.2,40:0.4,30:-0.4,20:-1.2,10:-2.0},
+      '8': {100:22.7,95:21.0,90:19.3,85:17.6,80:15.9,78:14.6,76:13.3,74:12.0,72:10.7,70:9.4,68:8.1,66:6.8,64:5.5,62:4.2,60:2.9,50:2.1,40:1.3,30:0.5,20:-0.3,10:-1.1},
+      '9': {100:23.5,95:21.8,90:20.0,85:18.4,80:16.8,78:15.4,76:14.1,74:12.8,72:11.5,70:10.2,68:9.0,66:7.6,64:6.3,62:5.0,60:3.7,50:2.9,40:2.1,30:1.3,20:0.5,10:-0.3}
+    },
+    SITUPS: { // 1分钟仰卧起坐（次）
+      '7': {100:50,95:48,90:46,85:43,80:40,78:38,76:36,74:34,72:32,70:30,68:28,66:26,64:24,62:22,60:20,50:18,40:16,30:14,20:12,10:10},
+      '8': {100:51,95:49,90:47,85:44,80:41,78:39,76:37,74:35,72:33,70:31,68:29,66:27,64:25,62:23,60:21,50:19,40:17,30:15,20:13,10:11},
+      '9': {100:52,95:50,90:48,85:45,80:42,78:40,76:38,74:36,72:34,70:32,68:30,66:28,64:26,62:24,60:22,50:20,40:18,30:16,20:14,10:12}
+    },
+    LONGJUMP: {
+      '7': {100:196,95:190,90:184,85:177,80:170,78:167,76:164,74:161,72:158,70:155,68:152,66:149,64:146,62:143,60:140,50:135,40:130,30:125,20:120,10:115},
+      '8': {100:200,95:194,90:188,85:181,80:174,78:171,76:168,74:165,72:162,70:159,68:156,66:153,64:150,62:147,60:144,50:139,40:134,30:129,20:124,10:119},
+      '9': {100:202,95:196,90:190,85:183,80:176,78:173,76:170,74:167,72:164,70:161,68:158,66:155,64:152,62:149,60:146,50:141,40:136,30:131,20:126,10:121}
+    },
+    BMI: {
+      '7': { normal:[14.8,21.7], lowMax:14.7, over:[21.8,24.4], obeseMin:24.5 },
+      '8': { normal:[15.3,22.2], lowMax:15.2, over:[22.3,24.8], obeseMin:24.9 },
+      '9': { normal:[16.0,22.6], lowMax:15.9, over:[22.7,25.1], obeseMin:25.2 }
+    },
+    VC: {
+      '7': {100:2750,95:2650,90:2550,85:2450,80:2350,78:2300,76:2240,74:2050,72:1950,70:1850,68:1750,66:1650,64:1550,62:1450,60:1350,50:1310,40:1270,30:1230,20:1190,10:1150},
+      '8': {100:2900,95:2800,90:2680,85:2650,80:2500,78:2440,76:2400,74:2200,72:2100,70:2000,68:1900,66:1800,64:1700,62:1600,60:1500,50:1460,40:1400,30:1380,20:1340,10:1300},
+      '9': {100:3050,95:2950,90:2900,85:2800,80:2650,78:2590,76:2490,74:2350,72:2250,70:2150,68:2050,66:1950,64:1850,62:1750,60:1650,50:1600,40:1530,30:1500,20:1450,10:1400}
+    }
+  }
+};
+
+/** ---------- 工具函数 ---------- */
+const mmssToSec = s => {
+  if (typeof s === "number") return s;
+  const m = /(\d+)'(\d+)/.exec(s);
+  return m ? (+m[1])*60 + (+m[2]) : parseFloat(s);
+};
+
+// 对于“越小越好”（时间）表：返回对应得分
+function lookupLowerBetter(valueSec, table) {
+  // 表中：score->thresholdSec，含义：达到（<=）该阈值即可获得该分
+  const pairs = Object.entries(table).map(([score,thr])=>[+score, mmssToSec(thr)]).sort((a,b)=>b[0]-a[0]); // 分数从高到低
+  for (const [score, thr] of pairs) {
+    if (valueSec <= thr) return score;
+  }
+  // 全部未达标，给最低分
+  return pairs[pairs.length-1][0];
+}
+
+// 对于“越大越好”（距离/次数/肺活量/前屈）：达到（>=）阈值即可获该分
+function lookupHigherBetter(value, table) {
+  const pairs = Object.entries(table).map(([score,thr])=>[+score, +thr]).sort((a,b)=>b[0]-a[0]);
+  for (const [score, thr] of pairs) {
+    if (value >= thr) return score;
+  }
+  return pairs[pairs.length-1][0];
+}
+
+// BMI 区间
+function scoreBMI(val, cfg){
+  if (val >= cfg.normal[0] && val <= cfg.normal[1]) return 100;
+  if (val <= cfg.lowMax) return 80;          // 低体重
+  if (val >= cfg.over[0] && val <= cfg.over[1]) return 80;  // 超重
+  if (val >= cfg.obeseMin) return 60;        // 肥胖
+  return 60; // 安全兜底
+}
+
+/** ---------- 输入区生成 ---------- */
+const inputsArea = document.getElementById('inputsArea');
+const genderEl = document.getElementById('gender');
+const gradeEl = document.getElementById('grade');
+
+const FIELDS = [
+  { key:'BMI', label:'体重指数（BMI）', unit:'数值（kg/m²）', placeholder:'如 20.3', type:'number' },
+  { key:'VC', label:'肺活量', unit:'mL（毫升，越大越好）', placeholder:'如 2600', type:'number' },
+  { key:'SPRINT50', label:'50 米跑', unit:'秒（越小越好）', placeholder:'如 8.8', type:'number' },
+  { key:'SITREACH', label:'坐位体前屈', unit:'厘米（可为负）', placeholder:'如 12.3', type:'number' },
+  { key:'LONGJUMP', label:'立定跳远', unit:'厘米（越大越好）', placeholder:'如 210', type:'number' },
+  { key:'STRENGTH', label:'力量项目', unit:'次（男：引体向上；女：1分钟仰卧起坐）', placeholder:'如 8 / 40', type:'number' },
+  { key:'MIDRUN', label:'中长跑', unit:'男：1000 米（秒）/ 女：800 米（秒）', placeholder:"如 230（=3'50\"）", type:'number' }
+];
+
+function buildInputs(){
+  inputsArea.innerHTML = '';
+  const g = genderEl.value;
+  const grade = gradeEl.value;
+
+  FIELDS.forEach(f=>{
+    const row = document.createElement('div');
+    row.className='row';
+    const lab = document.createElement('label');
+    lab.textContent = f.key==='STRENGTH'
+      ? (g==='male'?'引体向上（男）':'仰卧起坐（女，1分钟）')
+      : (f.key==='MIDRUN'?(g==='male'?'1000 米跑（男）':'800 米跑（女）'): f.label);
+    const input = document.createElement('input');
+    input.type='number'; input.step='0.01'; input.id=f.key;
+    input.placeholder=f.placeholder; input.className='input';
+    const unit = document.createElement('div'); unit.className='units'; unit.textContent=f.unit;
+    row.append(lab,input,unit); inputsArea.appendChild(row);
+  });
+}
+
+/** ---------- 计算与渲染 ---------- */
+const scoreTableBody = document.querySelector('#scoreTable tbody');
+const totalScoreEl = document.getElementById('totalScore');
+const summaryBadge = document.getElementById('summaryBadge');
+
+function readVal(id){
+  const el = document.getElementById(id);
+  if (!el) return null;
+  const v = parseFloat(el.value);
+  return isNaN(v)?null:v;
+}
+
+function calc(){
+  const g = genderEl.value;
+  const grade = gradeEl.value;
+  const cfg = TABLES[g];
+
+  const rows = [];
+
+  // BMI
+  const bmi = readVal('BMI');
+  let bmiScore = null;
+  if (bmi!=null) bmiScore = scoreBMI(bmi, cfg.BMI[grade]);
+  rows.push({name:'体重指数（BMI）', raw:bmi, score:bmiScore, w:WEIGHTS.BMI, tip:'区间评分：正常100；低体重/超重80；肥胖60'});
+
+  // 肺活量
+  const vc = readVal('VC');
+  let vcScore = null;
+  if (vc!=null) vcScore = lookupHigherBetter(vc, cfg.VC[grade]);
+  rows.push({name:'肺活量（mL）', raw:vc, score:vcScore, w:WEIGHTS.VC, tip:'达到对应阈值得分（越大越好）'});
+
+  // 50m
+  const s50 = readVal('SPRINT50');
+  let s50Score = null;
+  if (s50!=null) s50Score = lookupLowerBetter(s50, cfg.SPRINT50[grade]);
+  rows.push({name:'50 米跑（秒）', raw:s50, score:s50Score, w:WEIGHTS.SPRINT50, tip:'不高于阈值即获该分（越小越好）'});
+
+  // 前屈
+  const sr = readVal('SITREACH');
+  let srScore = null;
+  if (sr!=null) srScore = lookupHigherBetter(sr, cfg.SITREACH[grade]);
+  rows.push({name:'坐位体前屈（厘米）', raw:sr, score:srScore, w:WEIGHTS.SITREACH, tip:'达到对应阈值得分'});
+
+  // 跳远
+  const lj = readVal('LONGJUMP');
+  let ljScore = null;
+  if (lj!=null) ljScore = lookupHigherBetter(lj, cfg.LONGJUMP[grade]);
+  rows.push({name:'立定跳远（厘米）', raw:lj, score:ljScore, w:WEIGHTS.LONGJUMP, tip:'达到对应阈值得分'});
+
+  // 力量
+  const st = readVal('STRENGTH');
+  let stScore = null;
+  if (st!=null){
+    if (g==='male') stScore = lookupHigherBetter(st, cfg.PULLUPS[grade]);
+    else stScore = lookupHigherBetter(st, cfg.SITUPS[grade]);
+  }
+  rows.push({name:(g==='male'?'引体向上（次）':'仰卧起坐（次）'), raw:st, score:stScore, w:WEIGHTS.STRENGTH, tip:'达到对应阈值得分'});
+
+  // 中长跑
+  const mr = readVal('MIDRUN');
+  let mrScore = null;
+  if (mr!=null){
+    if (g==='male') mrScore = lookupLowerBetter(mr, cfg.MIDRUN1000[grade]);
+    else mrScore = lookupLowerBetter(mr, cfg.MIDRUN800[grade]);
+  }
+  rows.push({name:(g==='male'?'1000 米跑（秒）':'800 米跑（秒）'), raw:mr, score:mrScore, w:WEIGHTS.MIDRUN, tip:'不高于阈值即获该分'});
+
+  // 渲染表格
+  scoreTableBody.innerHTML='';
+  let total = 0, wsum = 0;
+  for (const r of rows){
+    const s = (typeof r.score==='number')? r.score : null;
+    const weighted = (s!=null)? (s*r.w) : null;
+    if (weighted!=null){ total += weighted; wsum += r.w; }
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${r.name}</td>
+      <td>${r.raw==null?'—':r.raw}</td>
+      <td>${s==null?'—':s.toFixed(0)}</td>
+      <td>${(r.w*100).toFixed(0)}%</td>
+      <td>${weighted==null?'—':weighted.toFixed(2)}</td>
+      <td class="muted mini">${r.tip}</td>
+    `;
+    scoreTableBody.appendChild(tr);
+  }
+
+  totalScoreEl.textContent = (wsum>0)? total.toFixed(2) : '—';
+  summaryBadge.textContent = (wsum>0)? '加权总分 = Σ(单项分 × 权重)' : '—';
+}
+
+/** ---------- 评分表弹窗（展示用） ---------- */
+const tabsEl = document.getElementById('tabs');
+const modalBody = document.getElementById('modalBody');
+
+const SHEETS = [
+  {id:'male', name:'男生项目表', build: ()=>{
+    return buildTablesFromMap([
+      ['1000米（秒）', TABLES.male.MIDRUN1000],
+      ['50米（秒）', TABLES.male.SPRINT50],
+      ['坐位体前屈（厘米）', TABLES.male.SITREACH],
+      ['引体向上（次）', TABLES.male.PULLUPS],
+      ['立定跳远（厘米）', TABLES.male.LONGJUMP],
+      ['肺活量（mL）', TABLES.male.VC],
+      ['BMI（区间）', TABLES.male.BMI, true],
+    ]);
+  }},
+  {id:'female', name:'女生项目表', build: ()=>{
+    return buildTablesFromMap([
+      ['800米（秒）', TABLES.female.MIDRUN800],
+      ['50米（秒）', TABLES.female.SPRINT50],
+      ['坐位体前屈（厘米）', TABLES.female.SITREACH],
+      ['1分钟仰卧起坐（次）', TABLES.female.SITUPS],
+      ['立定跳远（厘米）', TABLES.female.LONGJUMP],
+      ['肺活量（mL）', TABLES.female.VC],
+      ['BMI（区间）', TABLES.female.BMI, true],
+    ]);
+  }},
+];
+
+function buildTablesFromMap(items){
+  const wrap = document.createElement('div');
+  items.forEach(([title, map, isBMI])=>{
+    const h = document.createElement('h4');
+    h.textContent = title; h.style.margin = '12px 0 6px';
+    wrap.appendChild(h);
+
+    if (isBMI){
+      const t = document.createElement('table'); t.className='table';
+      const thead = `<thead><tr><th>年级</th><th>正常=100</th><th>低体重=80</th><th>超重=80</th><th>肥胖=60</th></tr></thead>`;
+      const rows = ['7','8','9'].map(g=>{
+        const v = map[g];
+        return `<tr><td>${g}</td><td>${v.normal[0]}~${v.normal[1]}</td><td>≤${v.lowMax}</td><td>${v.over[0]}~${v.over[1]}</td><td>≥${v.obeseMin}</td></tr>`;
+      }).join('');
+      t.innerHTML = thead+`<tbody>${rows}</tbody>`;
+      wrap.appendChild(t);
+    }else{
+      // 分数阈值表
+      const t = document.createElement('table'); t.className='table';
+      const thead = `<thead><tr><th>分数</th><th>七年级</th><th>八年级</th><th>九年级</th></tr></thead>`;
+      const scores = Object.keys(Object.values(map)[0]).map(x=>+x).sort((a,b)=>b-a);
+      const rows = scores.map(sc=>{
+        const v7 = Object.values(map['7'])[scores.indexOf(sc)]===undefined? map['7'][sc] : map['7'][sc];
+        const v8 = map['8'][sc];
+        const v9 = map['9'][sc];
+        return `<tr><td>${sc}</td><td>${v7}</td><td>${v8}</td><td>${v9}</td></tr>`;
+      }).join('');
+      t.innerHTML = thead+`<tbody>${rows}</tbody>`;
+      wrap.appendChild(t);
+    }
+  });
+  return wrap;
+}
+
+function openTables(){
+  // 构建 tabs
+  tabsEl.innerHTML='';
+  modalBody.innerHTML='';
+  SHEETS.forEach((s,i)=>{
+    const b = document.createElement('button');
+    b.className = 'tab'+(i===0?' active':''); b.textContent = s.name;
+    b.addEventListener('click', ()=>{
+      document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+      b.classList.add('active');
+      renderSheet(s);
+    });
+    tabsEl.appendChild(b);
+  });
+  renderSheet(SHEETS[0]);
+  document.getElementById('tablesModal').showModal();
+}
+function renderSheet(sheet){
+  modalBody.innerHTML='';
+  modalBody.appendChild(sheet.build());
+}
+
+/** ---------- 事件 ---------- */
+function build(){ buildInputs(); calc(); }
+genderEl.addEventListener('change', build);
+gradeEl.addEventListener('change', calc);
+document.addEventListener('input', e=>{ if (e.target && e.target.classList.contains('input')) calc(); });
+document.getElementById('calcBtn').addEventListener('click', calc);
+document.getElementById('resetBtn').addEventListener('click', ()=>{ document.querySelectorAll('input').forEach(i=>i.value=''); calc(); });
+document.getElementById('printBtn').addEventListener('click', ()=> window.print());
+document.getElementById('viewTables').addEventListener('click', openTables);
+document.getElementById('closeModal').addEventListener('click', ()=> document.getElementById('tablesModal').close());
+
+build();
+</script>
+</body>
+</html>
